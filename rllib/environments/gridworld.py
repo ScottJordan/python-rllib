@@ -1,8 +1,10 @@
+from abc import ABC
 
 import numpy as np
 
 from gym import spaces
 import copy
+from .environment import Environment
 
 class Gridworldpy(object):
     def __init__(self, size=5):
@@ -41,7 +43,7 @@ class Gridworldpy(object):
         self.count += 1
         reward = -1.0
 
-        return self.get_state(), reward, self.is_terminal(), None
+        return self.get_state(), reward, self.is_terminal()
 
     def get_state(self):
         x = np.zeros(self.nums, dtype=np.float32)
