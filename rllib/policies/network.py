@@ -61,6 +61,8 @@ class NetNormal(nn.Module):
             self.std = nn.Parameter(torch.ones(act_dim) * sigma)
         else:
             self.std = torch.ones(act_dim) * sigma
+        self.mulayer.weight.data.fill_(0.00)
+        self.mulayer.bias.data.fill_(0.00)
 
     def constrain_std(self):
         small = self.std.data < 0.001

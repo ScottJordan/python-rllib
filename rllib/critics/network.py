@@ -75,8 +75,9 @@ class NetLinearVF(NetCritic):
     def __init__(self, in_dim):
         super(NetLinearVF, self).__init__()
         self.v = nn.Linear(in_dim, 1, bias=True)
-        self.v.weight.data.copy_(torch.from_numpy(np.zeros(self.v.weight.shape)))
-
+        # self.v.weight.data.copy_(torch.from_numpy(np.zeros(self.v.weight.shape)))
+        self.v.weight.data.fill_(0.00)
+        self.v.bias.data.fill_(0.00)
 
     def forward(self, x):
         return self.v(x)

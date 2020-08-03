@@ -97,7 +97,7 @@ def get_flat_grad(model):
 
 def set_flat_params(model, flat_params):
     offset = 0
-    flat_params = torch.from_numpy(flat_params)
+    flat_params = torch.from_numpy(flat_params.flatten())
     for param in ordered_params(model):
         numel = param.numel()
         param.data.copy_(flat_params[offset:offset + numel].view(param.data.shape))
