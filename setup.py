@@ -8,8 +8,8 @@ setup(
     packages=find_packages(),
     install_requires=[
         "numpy",
-        "cloudpickle",
         "torch",
+        "cloudpickle",
         "gym"
     ],
 )

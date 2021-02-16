@@ -14,11 +14,10 @@ class FourierBasis(Basis):
     def __init__(self, ranges, dorder, iorder, both=False):
         self.iorder = int(iorder)
         self.dorder = int(dorder)
-        self.ranges = ranges.astype(np.float32)
-        self.feat_range = (ranges[:, 1] - ranges[:, 0]).astype(np.float32)
+        self.ranges = ranges.astype(np.float64)
+        self.feat_range = (ranges[:, 1] - ranges[:, 0]).astype(np.float64)
         self.feat_range[self.feat_range == 0] = 1
-        if both:
-            self.feat_range = np.abs(ranges).max(axis=1)
+
 
         iTerms = iorder * ranges.shape[0]  # number independent terms
         dTerms = pow(dorder+1, ranges.shape[0])  # number of dependent
@@ -29,7 +28,7 @@ class FourierBasis(Basis):
         self.num_input_features = int(ranges.shape[0])
         #print(self.num_input_features, iTerms, dTerms, self.num_features)
         #print("basis ", order, ranges.shape, self.num_features)
-        self.C = np.zeros((self.num_features, ranges.shape[0]), dtype=np.float32)
+        self.C = np.zeros((self.num_features, ranges.shape[0]), dtype=np.float64)
         counter = np.zeros(ranges.shape[0])
         termCount = 0
         while termCount < dTerms:
@@ -47,14 +46,8 @@ class FourierBasis(Basis):
             self.num_features *= 2
 
     def encode(self, x):
-        x = x.flatten()
-        #scaled = (x.astype(np.float64) - self.ranges[:, 0]) / self.feat_range
-        #if self.both:
-        #    scaled = scaled * 2 - 1
-        if self.both:
-            scaled = x.astype(np.float64) / self.feat_range
-        else:
-            scaled = (x.astype(np.float64) - self.ranges[:, 0]) / self.feat_range
+        x = x.flatten().astype(np.float64)
+        scaled = (x - self.ranges[:, 0]) / self.feat_range
         dprod = np.dot(scaled, self.C)
         if self.both:
             basis = np.concatenate([np.cos(dprod), np.sin(dprod)])
@@ -63,4 +56,7 @@ class FourierBasis(Basis):
         return basis
 
     def getNumFeatures(self):
-        return self.num_features
+        if self.both:
+            return self.num_features * 2
+        else:
+            return self.num_features

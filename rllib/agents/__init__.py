@@ -1,4 +1,5 @@
 from .cem import CEM
+from .sarsa import Sarsa
 from .actorcritic import ActorCritic
 from .agent import Agent, FixedAgent
 from .augmented_random_search import AugmentedRandomSearch, BasicRandomSearch

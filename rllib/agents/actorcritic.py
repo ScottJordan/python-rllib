@@ -6,17 +6,17 @@ from rllib.basis import Basis
 from rllib.policies import Policy
 
 class ActorCritic(Agent):
-    def __init__(self, vbasis:Basis, policy:Policy, alpha=0.001, valpha=0.01, lambda_=0.7, gamma=1.0, use_parl2=True):
+    def __init__(self, vbasis:Basis, policy:Policy, alpha=0.001, lambda_=0.8, gamma=1.0, beta=0.05, Gmag=1.0):
         self.vbasis = vbasis
         self.policy = policy
         self.alpha = alpha
-        self.valpha = valpha
+        self.valpha = 1.0
         self.lambda_ = lambda_
         self.gamma = gamma
-        self.use_parl2 = use_parl2
-
-        if use_parl2:
-            self.valpha = 1.0
+        self.Gavg = Gmag
+        self.beta = beta
+        self.G = 0.0
+        self.current_gamma = 1.0
 
         self.num_theta = self.policy.get_num_params()  # get_flat_params(self.actor).shape[0]
         self.n_featuresV = self.vbasis.getNumFeatures() # number of features for value funciton to use
@@ -46,27 +46,24 @@ class ActorCritic(Agent):
         '''
 
         # get features for value function
-        xt = self.vbasis.encode(np.array(obs))
+        xt = self.vbasis.encode(np.array(obs)).flatten().astype(np.float64)
 
         if not terminal:
             # get features for next state value function
-            xtp1 = self.vbasis.encode(np.array(obs_next))
-            xtp1 = xtp1.flatten().astype(np.float64)
+            xtp1 = self.vbasis.encode(np.array(obs_next)).flatten().astype(np.float64)
+
             # value function of next state
             vtp1 = self.v.dot(xtp1)
         else:
-            xtp1 = np.zeros_like((xt))
-            # no next state so 0 for all
-            # xtp1 = np.zeros_like(xt)
             vtp1 = 0
+            xtp1 = np.zeros_like(xt)
+
         # basis for policy
-        xp = np.array(obs)  # self.pbasis.basify(np.array(state))
+        xp = np.array(obs)
         at = np.array([act]).reshape(1, -1)
         # get compatible features
         grad_log_p, _ = self.policy.grad_logp(xp, at)
 
-        # flatten everything (this was important for LSTD because it used c++)
-        xt = xt.flatten().astype(np.float64)
         grad_log_p = grad_log_p.astype(np.float64).flatten()
 
         # value function of current state
@@ -75,15 +72,17 @@ class ActorCritic(Agent):
         # TD error
         delta = reward + self.gamma * vtp1 - vt
 
+
         # Decay eligibility traces
         self.ev = self.gamma * self.lambda_ * self.ev + xt
         self.etheta = self.gamma * self.lambda_ * self.etheta + grad_log_p
 
+
         # adaptive learning rate for valpha
-        if self.use_parl2:
-            d = self.ev.dot(xt)
-            if d < 0:
-                self.valpha = min(self.valpha, -1. / d)
+        d = self.ev.dot(self.gamma * xtp1 - xt)
+        if d < 0:
+            self.valpha = min(self.valpha, -1. / d)
+
 
         self.v += self.valpha * delta * self.ev
 
@@ -91,13 +90,16 @@ class ActorCritic(Agent):
         if normv > 1000:
             self.v = self.v / normv
 
-        gtheta = self.alpha * delta * self.etheta
+        alpha = self.alpha * (1/(self.Gavg + 1e-3))  # scale learning rate by average magnitude of returns
+        gtheta = alpha * delta * self.etheta
 
         updated = False
         if not np.any(np.isnan(gtheta)):
             updated = True
             self.policy.add_to_params(gtheta)
 
+        self.G += self.current_gamma * reward
+        self.current_gamma *= self.gamma
 
         err = [delta]
 
@@ -105,9 +107,14 @@ class ActorCritic(Agent):
             # decay eligibility traces
             self.ev *= 0
             self.etheta *= 0
+            self.Gavg += self.beta * (np.abs(self.G) - self.Gavg)
+            self.G = 0.0
+            self.current_gamma = 1.0
 
         return updated, err
 
     def new_episode(self):
         self.ev *= 0
         self.etheta *= 0
+        self.G = 0.0
+        self.current_gamma = 1.0
