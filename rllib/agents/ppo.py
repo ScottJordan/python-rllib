@@ -11,7 +11,7 @@ from rllib.policies import NetPolicy
 from rllib.utils.netutils import to_numpy, to_tensor
 class PPO(Agent):
     '''
-    actor critic meant for batch learning with NN
+    policy critic meant for batch learning with NN
     '''
     def __init__(self, vf:NetCritic, policy:NetPolicy, alpha=1e-4, steps_batch:int=64, batch_size:int=16, epochs:int=10, clip:float=0.2, ent_coef:float=0.0, gamma:float=0.999, lam:float=0.99):
         self.vf = vf

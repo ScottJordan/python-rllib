@@ -15,7 +15,7 @@ class CEM(Agent):
         Natural Actor Critic TD algorithm
         :param vbasis: basis for value function
         :param policy: Policy class for the agent to use
-        :param alpha: actor learning rate
+        :param alpha: policy learning rate
         :param calpha: critic learning rate
         :param lambda_: eligibility decay rate
         :param gamma: reward discount factor

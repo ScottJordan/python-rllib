@@ -18,7 +18,7 @@ class ActorCritic(Agent):
         self.G = 0.0
         self.current_gamma = 1.0
 
-        self.num_theta = self.policy.get_num_params()  # get_flat_params(self.actor).shape[0]
+        self.num_theta = self.policy.get_num_params()  # get_flat_params(self.policy).shape[0]
         self.n_featuresV = self.vbasis.getNumFeatures() # number of features for value funciton to use
         self.v = np.zeros(self.n_featuresV, dtype=np.float64).flatten()  # value function parameter vector
         self.ev = np.zeros_like(self.v)  # eligibility trace vector for value function

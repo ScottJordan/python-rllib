@@ -50,7 +50,7 @@ def main():
     basis = FourierBasis(ranges, dorder=dorder, iorder=iorder, both=both)
 
 
-    num_actions = env.action_space.n  # assumes actions space is discrete. Continuous actions can also be handled by actor-critic
+    num_actions = env.action_space.n  # assumes actions space is discrete. Continuous actions can also be handled by policy-critic
 
     epsilon = 0.015  # epsilon greedy parameter
     lam = 0.7  # eligibility trace decay parameter.
@@ -78,7 +78,7 @@ def main():
     memory = TrajectoryMemory(obs_dim=obs_dim, act_dim=act_dim, max_len=T, max_trajs=N)  # Create a memory object to store the observed trajectories
     srets = run_agent(env, agent1, num_episodes=100, memory=memory, save_dir="./", save_name="sarsa_experience.pkl")
     arets = run_agent(env, agent2, num_episodes=100, memory=memory, save_dir="./", save_name="ac_experience.pkl")
-    # Note that the second time run_agent is called the same memory object is used. This means the trajectories saved will be from both sarsa and actor-critic
+    # Note that the second time run_agent is called the same memory object is used. This means the trajectories saved will be from both sarsa and policy-critic
     # one can load previous saved trajectory buffer and reuse it. Or sets of trajectories can be saved individually and reloaded together.
 
 

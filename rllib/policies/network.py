@@ -44,6 +44,8 @@ class NetSoftmax(nn.Module):
         self.in_dim = in_dim
         self.act_dim = act_dim
         self.layer = nn.Linear(in_dim, act_dim, bias=True)
+        self.layer.weight.data.fill_(0.00)
+        self.layer.bias.data.fill_(0.00)
 
     def forward(self, x):
         p = F.softmax(self.layer(x), dim=1)
@@ -204,4 +206,4 @@ class NetPolicy(nn.Module, Policy):
         grad = np.array(grads, dtype=np.float64)
         logp = to_numpy(lp).reshape(-1, 1)
 
-        return logp, grad
+        return grad, logp
