@@ -23,7 +23,7 @@ def run_agent(env, agent: Agent, num_episodes: int, memory: TrajectoryMemory, sa
             a, logp = agent.get_action(s)  # gets the action and the log probability of that action for the current state
             snext, reward, done = env.step(a)  # gets the next state, reward, and whether or note the episode is over.
             agent.update(s, a, logp, reward, snext, done)  # runs the agent update
-            memory.add(traj, s, a, logp, reward, snext, done)  # saves the transition into a buffer (not an experience replay style buffer)
+            memory.add(traj, s, a, reward, logp, snext, done)  # saves the transition into a buffer (not an experience replay style buffer)
             s = snext  # updates the current state to be the next state
             G += reward  # update return for the current episode
         returns.append(G)  # add return from this episode to the list

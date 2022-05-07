@@ -32,6 +32,11 @@ class Linear_Softmax(Policy):
 
         return a, logp
 
+    def log_probabilty(self, obs:np.ndarray, action: int)->float:
+        x = self.basis.encode(obs)
+        p = self.get_p(x)
+        return np.log(p[action])
+
     def get_num_params(self):
         return self.num_params
 
