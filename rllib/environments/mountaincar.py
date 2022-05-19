@@ -65,6 +65,9 @@ class Mountaincar(Environment):
         v += self._ucoef * u - self._g * np.cos(self._h * x)
         v = np.clip(v, self.observation_space.low[1], self.observation_space.high[1])
         x += v
+        if x <= self.observation_space.low[0]:
+            x = self.observation_space.low[0]
+            v = 0.0
 
         return np.array([x, v])
 
